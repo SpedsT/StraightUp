@@ -2,79 +2,324 @@ angular.module('starter.controllers', [])
 
   .controller('AppCtrl', function ($scope, $ionicModal, $timeout) {
 
-    // With the new view caching in Ionic, Controllers are only called
-    // when they are recreated or on app start, instead of every page change.
-    // To listen for when this page is active (for example, to refresh data),
-    // listen for the $ionicView.enter event:
-    //$scope.$on('$ionicView.enter', function(e) {
-    //});
+  })
 
-    // Form data for the login modal
-    $scope.loginData = {};
+  /*
+      #########################
+      ### Status Controller ###
+      #########################
+  */
+  .controller('StatusCtrl', function ($scope, $ionicLoading, $ionicPopover, $ionicPopup, Devices, BLE, $interval) {
 
-    // Create the login modal that we will use later
-    $ionicModal.fromTemplateUrl('templates/login.html', {
-      scope: $scope
-    }).then(function (modal) {
-      $scope.modal = modal;
+    $scope.upperDevice = null;
+    $scope.lowerDevice = null;
+    $scope.upperMessage = "";
+    $scope.lowerMessage = "";
+    $scope.isUpperConnected = false;
+    $scope.isLowerConnected = false;
+
+    document.addEventListener("deviceready", onDeviceReady, false);
+
+    function onDeviceReady() {
+
+      // Start to scan for available devices
+      //
+      ble.isEnabled(
+        function () {
+          console.log("Bluetooth is enabled");
+        },
+        function () {
+          $ionicPopup.alert({
+            title: 'WARNING!',
+            template: 'Bluetooth is not enabled!'
+          });
+        });
+
+      // initial scan
+      BLE.scan().then(success, failure);
+    }
+
+
+    // keep a reference since devices will be added
+    $scope.devices = Devices.all();
+
+    var success = function () {
+      if ($scope.devices.length < 1) {
+        // a better solution would be to update a status message rather than an alert
+        alert("Didn't find any Bluetooth Low Energy devices.");
+      }
+    };
+
+    var failure = function (error) {
+      alert(error);
+    };
+
+    // pull to refresh
+    $scope.onRefresh = function () {
+      BLE.scan().then(
+        success, failure
+      ).finally(
+        function () {
+          $scope.$broadcast('scroll.refreshComplete');
+        }
+      )
+    }
+
+    $scope.$on('stopLoading', function (event, args) {
+      $ionicLoading.hide();
     });
 
-    // Triggered in the login modal to close it
-    $scope.closeLogin = function () {
-      $scope.modal.hide();
+    // Popovers
+    //
+    $ionicPopover.fromTemplateUrl('templates/upperPopover.html', {
+      scope: $scope
+    }).then(function (upperPopover) {
+      $scope.upperPopover = upperPopover;
+    });
+
+    $ionicPopover.fromTemplateUrl('templates/lowerPopover.html', {
+      scope: $scope
+    }).then(function (lowerPopover) {
+      $scope.lowerPopover = lowerPopover;
+    });
+
+    $scope.openUpperPopover = function ($event) {
+      $scope.upperPopover.show($event);
     };
 
-    // Open the login modal
-    $scope.login = function () {
-      $scope.modal.show();
+    $scope.openLowerPopover = function ($event) {
+      $scope.lowerPopover.show($event);
     };
 
-    // Perform the login action when the user submits the login form
-    $scope.doLogin = function () {
-      console.log('Doing login', $scope.loginData);
-
-      // Simulate a login delay. Remove this and replace with your login
-      // code if using a login system
-      $timeout(function () {
-        $scope.closeLogin();
-      }, 1000);
+    $scope.closeUpperPopover = function () {
+      $scope.upperPopover.hide();
     };
+
+    $scope.closeLowerPopover = function () {
+      $scope.lowerPopover.hide();
+    };
+
+    //Cleanup the popover when we're done with it!
+    $scope.$on('$destroy', function () {
+      $scope.upperPopover.remove();
+      $scope.lowerPopover.remove();
+    });
+
+    // Connectivity
+    //
+    $scope.connectUpperBluetooth = function (upperDeviceID) {
+      console.log("Connecting upper to " + upperDeviceID);
+
+      $ionicLoading.show({
+        template: '<ion-spinner> icon="android" </ion-spinner> <br/> Connecting'
+      });
+
+      BLE.connect(upperDeviceID).then(
+        function (peripheral) {
+          $scope.upperDevice = peripheral;
+          BLE.startNotification();
+        }
+      );
+      $scope.closeUpperPopover();
+    };
+
+    $scope.disconnectUpperPopover = function () {
+      if ($scope.isUpperConnected) {
+        BLE.disconnect($scope.upperDevice.id);
+        $scope.upperDevice = null;
+        $scope.isUpperConnected = false;
+      }
+
+    }
+
+    $scope.connectLowerBluetooth = function (lowerDeviceID) {
+      console.log("Connecting lower to " + lowerDeviceID);
+
+      $ionicLoading.show({
+        template: '<ion-spinner> icon="android" </ion-spinner> <br/> Connecting'
+      });
+
+      BLE.connect(lowerDeviceID).then(
+        function (peripheral) {
+          $scope.lowerDevice = peripheral;
+          BLE.startNotification();
+        }
+      );
+
+      $scope.closeLowerPopover();
+    };
+
+    $scope.disconnectLowerPopover = function () {
+      if ($scope.isLowerConnected) {
+        BLE.disconnect($scope.lowerDevice.id);
+        $scope.lowerDevice = null;
+        $scope.isLowerConnected = false;
+      }
+    }
+
+    // Connectivity checkings
+    //
+
+    $interval(function () {
+
+      // Upper
+      if ($scope.upperDevice) {
+        ble.isConnected(
+          $scope.upperDevice.id,
+          function () {
+            $scope.isUpperConnected = true;
+          },
+          function () {
+            $scope.isUpperConnected = false;
+          }
+        );
+      } else $scope.isUpperConnected = false;
+
+      // Lower
+      if ($scope.lowerDevice) {
+        ble.isConnected(
+          $scope.lowerDevice.id,
+          function () {
+            $scope.isLowerConnected = true;
+          },
+          function () {
+            $scope.isLowerConnected = false;
+          }
+        );
+      } else $scope.isLowerConnected = false;
+    }, 1000);
+
   })
 
-  /*
-
-      ### Status Controller ###
-
-  */
-  .controller('StatusCtrl', function ($scope) {
-
-  })
-
 
   /*
-
+      ##################################
       ### Live Monitoring Controller ###
-
+      ##################################
   */
   .controller('LiveMonitoringCtrl', function ($scope) {
 
+    $scope.options = {
+      loop: true,
+      effect: 'slide',
+      speed: 500,
+      onInit: function (swiper) {
+        $scope.sw = swiper;
+      }
+    };
+
   })
 
 
   /*
-
+      #############################
       ### Statistics Controller ###
-
+      #############################
   */
   .controller('StatisticsCtrl', function ($scope) {
 
+    var lastWeekChartID = document.getElementById("lastWeek").getContext('2d');
+    var todayChartID = document.getElementById("today").getContext('2d');
+    var deviationsChartID = document.getElementById("deviations").getContext('2d');
+
+    var pointBackgroundColor = [
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)',
+      'rgba(255, 255, 255, 1)'
+    ]
+
+    var lastWeekData = {
+      datasets: [{
+        label: 'Percentage of time in correct position',
+        data: [50, 20, 25, 35, 50, 55, 80],
+        backgroundColor: 'rgba(179, 229, 252, 0.35)',
+        borderColor: 'rgba(179, 229, 252, 1)',
+        pointBackgroundColor: pointBackgroundColor,
+        borderWidth: 3
+      }],
+      labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    };
+
+    var todayData = {
+      datasets: [{
+        label: 'Percentage of time in correct position',
+        data: [20, 65, 85, 50, 55, 20, 34, 20, 10, 0, 20, 60, 90, 100, 45, 60, 65],
+        backgroundColor: 'rgba(165, 214, 167, 0.35)',
+        borderColor: 'rgba(165, 214, 167, 1)',
+        pointBackgroundColor: pointBackgroundColor,
+        borderWidth: 3
+      }],
+      labels: ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '00']
+    };
+
+    var deviationsData = {
+      labels: ['Forwards', 'Rotated right', 'Leaned right', 'Backwards', 'Leaned left', 'Rotated left'],
+      datasets: [{
+          label: 'Today',
+          data: [7, 4, 6, 2, 4, 8],
+          backgroundColor: 'rgba(165, 214, 167, 0.35)',
+          borderColor: 'rgba(165, 214, 167, 1)',
+          pointBackgroundColor: pointBackgroundColor,
+          borderWidth: 3
+        },
+        {
+          label: 'Last week',
+          data: [9, 3, 6, 3, 8, 6],
+          backgroundColor: 'rgba(179, 229, 252, 0.35)',
+          borderColor: 'rgba(179, 229, 252, 1)',
+          pointBackgroundColor: pointBackgroundColor,
+          borderWidth: 3
+        }
+      ]
+    }
+
+    var options = [{
+      elements: {
+        point: {
+          hitRadius: 100,
+        }
+      },
+    }];
+
+
+    var lastWeekChart = new Chart(lastWeekChartID, {
+      type: 'line',
+      data: lastWeekData,
+      options: options,
+    });
+
+    var todayChart = new Chart(todayChartID, {
+      type: 'line',
+      data: todayData,
+      options: options,
+    });
+
+    var deviationsChart = new Chart(deviationsChartID, {
+      type: 'radar',
+      data: deviationsData,
+      options: options,
+    });
+
   })
 
 
   /*
-
+      #######################
       ### Tips Controller ###
-
+      #######################  
   */
   .controller('TipsCtrl', function ($scope) {
 
@@ -82,9 +327,9 @@ angular.module('starter.controllers', [])
 
 
   /*
-
+      ########################
       ### About Controller ###
-
+      ########################
   */
   .controller('AboutCtrl', function ($scope) {
 
@@ -92,9 +337,9 @@ angular.module('starter.controllers', [])
 
 
   /*
-
+      ##########################
       ### Contact Controller ###
-
+      ##########################
   */
   .controller('ContactCtrl', function ($scope) {
 
@@ -102,10 +347,20 @@ angular.module('starter.controllers', [])
 
 
   /*
-
+      ###########################
       ### Feedback Controller ###
-
+      ###########################
   */
   .controller('FeedbackCtrl', function ($scope) {
+    $scope.ratingFull = {};
+    $scope.ratingFull.rate = 3;
+    $scope.ratingFull.max = 5;
 
+    $scope.ratingHalf = {};
+    $scope.ratingHalf.rate = 3.5;
+    $scope.ratingHalf.max = 5;
+
+    $scope.reset = function () {
+      $scope.ratingFull.rate = 0;
+    }
   })

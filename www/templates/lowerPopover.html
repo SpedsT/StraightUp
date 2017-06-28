@@ -1,0 +1,24 @@
+<style>
+  .popover {
+    width: 100%;
+  }
+
+</style>
+
+<ion-popover-view>
+  <ion-header-bar class="bar bar-header bar-stable">
+    <h1 class="title">Select device</h1>
+  </ion-header-bar>
+
+  <ion-content>
+    <ion-refresher pulling-text="Pull to refresh..." on-refresh="onRefresh()">
+    </ion-refresher>
+    <ion-list>
+      <ion-item class="item-icon-right" ng-repeat="device in devices" type="item-text-wrap" ng-click="connectLowerBluetooth(device.id)">
+        <h2>{{device.name}}</h2>
+        <p>{{device.id}} &nbsp; RSSI: {{device.rssi}}</p>
+        <i class=" icon ion-chevron-right icon-accessory "></i>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-popover-view>

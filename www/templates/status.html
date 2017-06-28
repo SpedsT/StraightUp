@@ -1,5 +1,49 @@
 <ion-view view-title="Status">
   <ion-content>
-    <h1>Status</h1>
+    <h1 style="padding-top: 10px" align="center">Status</h1>
+    <p class="notificationTime"> Time until notified: <span style="color:red"> 3 min </span></p>
+    <div class="card">
+
+      <div class="item item-divider">
+        <div class="row">
+          <div style="padding-top: 7%" class="col">Sensor 1: Upper Back</div>
+          <div class="col col-offset-20 stupidTempStyle">
+            <button ng-if="isUpperConnected" class="button button-balanced" ng-click="disconnectUpperPopover()"> Disconnect </button>
+            <button ng-if="!isUpperConnected" class="button button-balanced" ng-click="openUpperPopover($event)"> Connect </button>
+          </div>
+        </div>
+      </div>
+      <div class="item item-text-wrap">
+        Name: StraightUp1
+      </div>
+      <div class="item item-text-wrap">
+        Status:
+        <span ng-if="isUpperConnected" style="color: #33cd5f"> Connected </span>
+        <span ng-if="!isUpperConnected" style="color: red"> Disconnected </span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="item item-divider">
+        <div class="row">
+          <div style="padding-top: 7%" class="col">Sensor 2: Lower Back</div>
+          <div class="col col-offset-20 stupidTempStyle">
+            <button ng-if="isLowerConnected" class="button button-balanced" ng-click="disconnectLowerPopover()"> Disconnect </button>
+            <button ng-if="!isLowerConnected" class="button button-balanced" ng-click="openLowerPopover($event)"> Connect </button>
+          </div>
+        </div>
+      </div>
+      <div class="item item-text-wrap">
+        Name: StraightUp2
+      </div>
+      <div class="item item-text-wrap">
+        Status:
+        <span ng-if="isLowerConnected" style="color: #33cd5f"> Connected </span>
+        <span ng-if="!isLowerConnected" style="color: red"> Disconnected </span>
+      </div>
+    </div>
+    <div style="padding: 10px">
+      <button class="button button-block button-balanced"> Calibrate </button>
+    </div>
   </ion-content>
 </ion-view>

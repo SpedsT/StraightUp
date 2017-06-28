@@ -1,0 +1,88 @@
+.menuColors {
+  color: #a5d6a7;
+}
+
+.chartStyle {
+  padding: 10px;
+  padding-right: 45px;
+}
+
+.radarStyle {
+  padding: 10px;
+}
+
+.yLabel {
+  writing-mode: tb-rl;
+  /* transform: rotate(180deg); */
+  transform: translate(70%, 50%);
+  color: #999999;
+}
+
+.textStyle {
+  color: #999999;
+  padding-top: 30px;
+  padding-left: 30px;
+  font-size: 15px;
+}
+
+.notificationTime {
+  font-size: 14px;
+  font-weight: 600;
+  padding-top: 10px;
+  padding-left: 10px;
+}
+
+.xLabel {
+  color: #999999;
+  padding-top: 0px;
+  font-size: 14px;
+  transform: translate(10%, -60%);
+}
+
+.titleStyle {
+  text-align: center;
+  color: #33cd5f;
+  font-weight: 900;
+  font-size: 30px;
+  line-height: 30px;
+}
+
+.centerImage {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 30px;
+}
+
+.slidesHeight {
+  padding-top: 30px;
+  height: 100% !important;
+}
+
+.correctStyle {
+  color: #33cd5f;
+}
+
+.incorrectStyle {
+  color: red;
+}
+
+.adviceStyle {
+  color: #999999;
+  padding-bottom: 50px;
+  padding-left: 30px;
+  font-size: 15px;
+}
+
+.stupidTempStyle {
+  color: #33cd5f;
+  margin-left: 14% !important
+}
+
+.rating-block {
+  display: inline-block;
+}
+
+.popover-margin {
+  margin: 15px;
+}

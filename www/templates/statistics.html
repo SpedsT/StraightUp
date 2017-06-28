@@ -1,5 +1,26 @@
 <ion-view view-title="Statistics">
   <ion-content>
-    <h1>Statistics</h1>
+    <h1 style="padding-top: 10px" align="center">Statistics</h1>
+
+    <span class="textStyle"> Deviations </span>
+    <canvas class="radarStyle" id="deviations" width="100%" align="center"></canvas>
+
+    <span class="textStyle"> Today </span>
+    <div class="row">
+      <div style: "width: 10px" class="col">
+        <span class="yLabel"> Percentage </span>
+      </div>
+      <canvas class="chartStyle col" id="today" width="100%" align="center"></canvas>
+    </div>
+    <p class="xLabel" align="center"> Time </p>
+
+
+    <span class="textStyle"> Last Week </span>
+    <div class="row">
+      <div style: "width: 10px" class="col">
+        <span class="yLabel"> Percentage </span>
+      </div>
+      <canvas class="chartStyle col" id="lastWeek" width="100%" align="center"></canvas>
+    </div>
   </ion-content>
 </ion-view>
