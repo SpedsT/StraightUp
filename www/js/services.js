@@ -52,19 +52,10 @@ angular.module('starter.services', [])
         return String.fromCharCode.apply(null, new Uint8Array(buffer));
       },
 
-      isConnected: function () {
-        return connected !== null;
-      },
-
       // Scan
       scan: function () {
         Devices.clean();
         var deferred = $q.defer();
-
-        // disconnect the connected device (hack, device should disconnect when leaving detail page)
-        if (connected) {
-          ret.disconnect();
-        }
 
         ble.startScan([], /* scan for all services */
           function (peripheral) {
@@ -98,7 +89,7 @@ angular.module('starter.services', [])
       },
 
       // Connect
-      connect: function (deviceId) {
+      connect: function (deviceId, deviceOptions) {
         var deferred = $q.defer();
 
         ble.connect(deviceId,
@@ -110,8 +101,10 @@ angular.module('starter.services', [])
               var props = c.properties;
               var hasWrite = props.indexOf("Write") > 0 || props.indexOf("WriteWithoutResponse") > 0;
               if (hasWrite) {
-                characteristic = c.characteristic;
-                service = c.service;
+                // characteristic = c.characteristic;
+                // service = c.service;
+                deviceOptions.characteristic = c.characteristic;
+                deviceOptions.service = c.service;
               }
             });
             console.log("Connected to " + deviceId);
@@ -128,9 +121,9 @@ angular.module('starter.services', [])
       },
 
       // Send Data
-      sendData: function (data) {
+      sendData: function (deviceId, deviceOptions, data) {
         var deferred = $q.defer();
-        ble.writeWithoutResponse(connected.id, service, characteristic, data,
+        ble.writeWithoutResponse(deviceId, deviceOptions.service, deviceOptions.characteristic, data,
           function (response) {
             deferred.resolve(response);
           },
@@ -141,15 +134,9 @@ angular.module('starter.services', [])
         return deferred.promise;
       },
 
-      // Add queue
-      addQueue: function (d) {
-        if (dataQueue.length <= 3)
-          dataQueue.push(d);
-      },
-
       // startNotification
-      startNotification: function () {
-        ble.startNotification(connected.id, service, characteristic,
+      startNotification: function (deviceId, deviceOptions) {
+        ble.startNotification(deviceId, deviceOptions.service, deviceOptions.characteristic,
           function (data) {
             if (ret.bytesToString(data) != "")
               ret.recievedData = ret.bytesToString(data);
@@ -160,8 +147,8 @@ angular.module('starter.services', [])
       },
 
       // stopNotification
-      stopNotification: function () {
-        ble.stopNotification(connected.id, service, characteristic,
+      stopNotification: function (deviceId, deviceOptions) {
+        ble.stopNotification(deviceId, deviceOptions.service, deviceOptions.characteristic,
           function () {
             alert("Notifications stopped!");
           },
@@ -172,11 +159,5 @@ angular.module('starter.services', [])
       }
     };
 
-    $interval(function () {
-      if (dataQueue.length > 0 && connected !== null) {
-        var d = dataQueue.shift();
-        ret.sendData(d);
-      }
-    }, 250);
     return ret;
   });

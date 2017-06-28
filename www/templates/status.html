@@ -14,7 +14,7 @@
         </div>
       </div>
       <div class="item item-text-wrap">
-        Name: StraightUp1
+        Name: {{upperDevice.name}}
       </div>
       <div class="item item-text-wrap">
         Status:
@@ -34,7 +34,7 @@
         </div>
       </div>
       <div class="item item-text-wrap">
-        Name: StraightUp2
+        Name: {{lowerDevice.name}}
       </div>
       <div class="item item-text-wrap">
         Status:
@@ -43,7 +43,7 @@
       </div>
     </div>
     <div style="padding: 10px">
-      <button class="button button-block button-balanced"> Calibrate </button>
+      <button class="button button-block button-balanced" ng-click="calibrate()"> Calibrate </button>
     </div>
   </ion-content>
 </ion-view>

@@ -17,6 +17,14 @@ angular.module('starter.controllers', [])
     $scope.lowerMessage = "";
     $scope.isUpperConnected = false;
     $scope.isLowerConnected = false;
+    var upperDeviceOptions = {
+      characteristic: "",
+      service: ""
+    };
+    var lowerDeviceOptions = {
+      characteristic: "",
+      service: ""
+    };
 
     document.addEventListener("deviceready", onDeviceReady, false);
 
@@ -114,10 +122,10 @@ angular.module('starter.controllers', [])
         template: '<ion-spinner> icon="android" </ion-spinner> <br/> Connecting'
       });
 
-      BLE.connect(upperDeviceID).then(
+      BLE.connect(upperDeviceID, upperDeviceOptions).then(
         function (peripheral) {
           $scope.upperDevice = peripheral;
-          BLE.startNotification();
+          BLE.startNotification(upperDeviceID, upperDeviceOptions);
         }
       );
       $scope.closeUpperPopover();
@@ -127,6 +135,8 @@ angular.module('starter.controllers', [])
       if ($scope.isUpperConnected) {
         BLE.disconnect($scope.upperDevice.id);
         $scope.upperDevice = null;
+        upperDeviceOptions.characteristic = "";
+        upperDeviceOptions.service = "";
         $scope.isUpperConnected = false;
       }
 
@@ -139,10 +149,10 @@ angular.module('starter.controllers', [])
         template: '<ion-spinner> icon="android" </ion-spinner> <br/> Connecting'
       });
 
-      BLE.connect(lowerDeviceID).then(
+      BLE.connect(lowerDeviceID, lowerDeviceOptions).then(
         function (peripheral) {
           $scope.lowerDevice = peripheral;
-          BLE.startNotification();
+          BLE.startNotification(lowerDeviceID, lowerDeviceOptions);
         }
       );
 
@@ -153,13 +163,14 @@ angular.module('starter.controllers', [])
       if ($scope.isLowerConnected) {
         BLE.disconnect($scope.lowerDevice.id);
         $scope.lowerDevice = null;
+        lowerDeviceOptions.characteristic = "";
+        lowerDeviceOptions.service = "";
         $scope.isLowerConnected = false;
       }
     }
 
     // Connectivity checkings
     //
-
     $interval(function () {
 
       // Upper
@@ -170,10 +181,18 @@ angular.module('starter.controllers', [])
             $scope.isUpperConnected = true;
           },
           function () {
+            $scope.upperDevice = null;
+            upperDeviceOptions.characteristic = "";
+            upperDeviceOptions.service = "";
             $scope.isUpperConnected = false;
           }
         );
-      } else $scope.isUpperConnected = false;
+      } else {
+        $scope.upperDevice = null;
+        upperDeviceOptions.characteristic = "";
+        upperDeviceOptions.service = "";
+        $scope.isUpperConnected = false;
+      };
 
       // Lower
       if ($scope.lowerDevice) {
@@ -183,11 +202,26 @@ angular.module('starter.controllers', [])
             $scope.isLowerConnected = true;
           },
           function () {
+            $scope.lowerDevice = null;
+            lowerDeviceOptions.characteristic = "";
+            lowerDeviceOptions.service = "";
             $scope.isLowerConnected = false;
           }
         );
-      } else $scope.isLowerConnected = false;
+      } else {
+        $scope.lowerDevice = null;
+        lowerDeviceOptions.characteristic = "";
+        lowerDeviceOptions.service = "";
+        $scope.isLowerConnected = false;
+      }
     }, 1000);
+
+    // Send Calibration message
+    //
+    $scope.calibrate = function () {
+      if ($scope.upperDevice) BLE.sendData($scope.upperDevice.id, upperDeviceOptions, BLE.stringToBytes("Calibrate"));
+      if ($scope.lowerDevice) BLE.sendData($scope.lowerDevice.id, lowerDeviceOptions, BLE.stringToBytes("Calibrate"));
+    }
 
   })
 
