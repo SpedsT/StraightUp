@@ -125,7 +125,7 @@ angular.module('starter.controllers', [])
       BLE.connect(upperDeviceID, upperDeviceOptions).then(
         function (peripheral) {
           $scope.upperDevice = peripheral;
-          BLE.startNotification(upperDeviceID, upperDeviceOptions);
+          BLE.startNotification(upperDeviceID, upperDeviceOptions, $scope.upperMessageRecieved);
         }
       );
       $scope.closeUpperPopover();
@@ -133,6 +133,7 @@ angular.module('starter.controllers', [])
 
     $scope.disconnectUpperPopover = function () {
       if ($scope.isUpperConnected) {
+        BLE.stopNotification($scope.upperDevice.id, upperDeviceOptions);
         BLE.disconnect($scope.upperDevice.id);
         $scope.upperDevice = null;
         upperDeviceOptions.characteristic = "";
@@ -152,7 +153,7 @@ angular.module('starter.controllers', [])
       BLE.connect(lowerDeviceID, lowerDeviceOptions).then(
         function (peripheral) {
           $scope.lowerDevice = peripheral;
-          BLE.startNotification(lowerDeviceID, lowerDeviceOptions);
+          BLE.startNotification(lowerDeviceID, lowerDeviceOptions, $scope.lowerMessageRecieved);
         }
       );
 
@@ -161,6 +162,7 @@ angular.module('starter.controllers', [])
 
     $scope.disconnectLowerPopover = function () {
       if ($scope.isLowerConnected) {
+        BLE.stopNotification($scope.lowerDevice.id, lowerDeviceOptions);
         BLE.disconnect($scope.lowerDevice.id);
         $scope.lowerDevice = null;
         lowerDeviceOptions.characteristic = "";
@@ -223,6 +225,18 @@ angular.module('starter.controllers', [])
       if ($scope.lowerDevice) BLE.sendData($scope.lowerDevice.id, lowerDeviceOptions, BLE.stringToBytes("Calibrate"));
     }
 
+    // Recieving messages
+    //
+    $scope.upperMessageRecieved = function (upperMessage) {
+      $scope.upperMessage = upperMessage;
+      console.log($scope.upperMessage);
+    }
+    $scope.lowerMessageRecieved = function (lowerMessage) {
+      $scope.lowerMessage = lowerMessage;
+      console.log($scope.lowerMessage);
+    }
+
+    // End of Stats controller
   })
 
 

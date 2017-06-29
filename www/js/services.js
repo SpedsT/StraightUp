@@ -38,7 +38,6 @@ angular.module('starter.services', [])
     var dataQueue = [];
 
     var ret = {
-      recievedData: "",
 
       stringToBytes: function (string) {
         var array = new Uint8Array(string.length);
@@ -135,11 +134,11 @@ angular.module('starter.services', [])
       },
 
       // startNotification
-      startNotification: function (deviceId, deviceOptions) {
+      startNotification: function (deviceId, deviceOptions, messageRecieveCallback) {
         ble.startNotification(deviceId, deviceOptions.service, deviceOptions.characteristic,
           function (data) {
             if (ret.bytesToString(data) != "")
-              ret.recievedData = ret.bytesToString(data);
+              messageRecieveCallback(ret.bytesToString(data));
           },
           function (response) {
             alert("Notification error: " + response);
@@ -149,9 +148,7 @@ angular.module('starter.services', [])
       // stopNotification
       stopNotification: function (deviceId, deviceOptions) {
         ble.stopNotification(deviceId, deviceOptions.service, deviceOptions.characteristic,
-          function () {
-            alert("Notifications stopped!");
-          },
+          function () {},
           function (response) {
             alert("Notification error: " + response);
           });
