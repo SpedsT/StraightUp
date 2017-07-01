@@ -43,7 +43,13 @@
       </div>
     </div>
     <div style="padding: 10px">
-      <button class="button button-block button-balanced" ng-click="calibrate()"> Calibrate </button>
+      <button class="button button-block button-balanced" ng-click="openCalibrationPopover($event)"> Calibrate </button>
+    </div>
+    <div style="padding: 10px">
+      You are currently
+      <span ng-if="isSitting"> sitting </span>
+      <span ng-if="!isSitting"> standing </span>
+      <label style="float: right" class="toggle disable-user-behavior"><input type="checkbox" ng-model="isSitting" class="ng-untouched ng-valid ng-dirty ng-valid-parse ng-not-empty" value="on"><div class="track"><div class="handle"></div></div></label>
     </div>
   </ion-content>
 </ion-view>

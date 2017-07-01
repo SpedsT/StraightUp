@@ -9,12 +9,17 @@ angular.module('starter.controllers', [])
       ### Status Controller ###
       #########################
   */
-  .controller('StatusCtrl', function ($scope, $ionicLoading, $ionicPopover, $ionicPopup, Devices, BLE, $interval) {
+  .controller('StatusCtrl', function ($scope, $ionicLoading, $ionicPopover, $ionicPopup, Devices, BLE, $interval, StorageService) {
 
+    $scope.upperIsCalibrated = false;
+    $scope.lowerIsCalibrated = false;
+    $scope.isSitting = true;
+    var dateOfLastMessageRecieved = null
+    if (StorageService.loadData('dateOfLastMessageRecieved')) dateOfLastMessageRecieved = StorageService.loadData('dateOfLastMessageRecieved');
     $scope.upperDevice = null;
     $scope.lowerDevice = null;
-    $scope.upperMessage = "";
-    $scope.lowerMessage = "";
+    $scope.upperMessage = [];
+    $scope.lowerMessage = [];
     $scope.isUpperConnected = false;
     $scope.isLowerConnected = false;
     var upperDeviceOptions = {
@@ -91,12 +96,22 @@ angular.module('starter.controllers', [])
       $scope.lowerPopover = lowerPopover;
     });
 
+    $ionicPopover.fromTemplateUrl('templates/calibrationPopover.html', {
+      scope: $scope
+    }).then(function (calibrationPopover) {
+      $scope.calibrationPopover = calibrationPopover;
+    });
+
     $scope.openUpperPopover = function ($event) {
       $scope.upperPopover.show($event);
     };
 
     $scope.openLowerPopover = function ($event) {
       $scope.lowerPopover.show($event);
+    };
+
+    $scope.openCalibrationPopover = function ($event) {
+      $scope.calibrationPopover.show($event);
     };
 
     $scope.closeUpperPopover = function () {
@@ -107,10 +122,15 @@ angular.module('starter.controllers', [])
       $scope.lowerPopover.hide();
     };
 
+    $scope.closeCalibrationPopover = function () {
+      $scope.calibrationPopover.hide();
+    };
+
     //Cleanup the popover when we're done with it!
     $scope.$on('$destroy', function () {
       $scope.upperPopover.remove();
       $scope.lowerPopover.remove();
+      $scope.calibrationPopover.remove();
     });
 
     // Connectivity
@@ -221,6 +241,9 @@ angular.module('starter.controllers', [])
     // Send Calibration message
     //
     $scope.calibrate = function () {
+      $scope.upperIsCalibrated = false;
+      $scope.lowerIsCalibrated = false;
+
       if ($scope.upperDevice) BLE.sendData($scope.upperDevice.id, upperDeviceOptions, BLE.stringToBytes("Calibrate"));
       if ($scope.lowerDevice) BLE.sendData($scope.lowerDevice.id, lowerDeviceOptions, BLE.stringToBytes("Calibrate"));
     }
@@ -228,11 +251,50 @@ angular.module('starter.controllers', [])
     // Recieving messages
     //
     $scope.upperMessageRecieved = function (upperMessage) {
-      $scope.upperMessage = upperMessage;
+
+      // Mark when the message was recieved
+      // var currentdate = new Date();
+      // var dateOfLastMessageRecieved = StorageService.loadData('dateOfLastMessageRecieved');
+
+      // if (Math.abs(currentDate - dateOfLastMessageRecieved))
+
+      // StorageService.saveData('dateOfLastMessageRecieved', currentdate);
+
+      // Checking for the calibration
+      if (upperMessage.includes("Calibrated")) {
+        $scope.upperIsCalibrated = true;
+        if ($scope.lowerIsCalibrated) {
+          $scope.closeCalibrationPopover();
+          alert("Calibrated!");
+        }
+      }
+
+      // Parse the message
+      if (upperMessage != "" && upperMessage != null) $scope.upperMessage = upperMessage.split(", ");
+
+      // Send the data to local storage for the statistics
+      StorageService.saveData('upperPositions', $scope.upperMessage);
+
       console.log($scope.upperMessage);
     }
+
     $scope.lowerMessageRecieved = function (lowerMessage) {
-      $scope.lowerMessage = lowerMessage;
+
+      // Checking for the calibration
+      if (lowerMessage.includes("Calibrated")) {
+        $scope.lowerIsCalibrated = true;
+        if ($scope.upperIsCalibrated) {
+          $scope.closeCalibrationPopover();
+          alert("Calibrated!");
+        }
+      }
+
+      // Parse the message
+      if (lowerMessage != "" && upperMessage != null) $scope.lowerMessage = lowerMessage.split(", ");
+
+      // Send the data to local storage for the statistics
+      StorageService.saveData('lowerPositions', $scope.lowerMessage);
+
       console.log($scope.lowerMessage);
     }
 

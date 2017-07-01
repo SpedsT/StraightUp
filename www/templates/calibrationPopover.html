@@ -1,0 +1,30 @@
+<style>
+  .popover {
+    width: 100%;
+    height: 380px;
+  }
+
+  .contentPadding {
+    padding: 10px;
+  }
+
+  .buttonPadding {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    padding-right: 15px;
+    padding-left: 10px;
+  }
+
+</style>
+
+<ion-popover-view>
+  <ion-header-bar class="bar bar-header bar-stable">
+    <h1 class="title">Correct posture</h1>
+  </ion-header-bar>
+
+  <ion-content class="contentPadding">
+    Please adjust your posture to one similar to the figure below.
+    <img style="width: 100%" src="resources/examplePosture.jpg " />
+    <button class="button button-block button-balanced buttonPadding" ng-click="calibrate()"> Start calibrating </button>
+  </ion-content>
+</ion-popover-view>
