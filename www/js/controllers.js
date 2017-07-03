@@ -11,13 +11,14 @@ angular.module('starter.controllers', [])
   */
   .controller('StatusCtrl', function ($scope, $ionicLoading, $ionicPopover, $ionicPopup, Devices, BLE, $interval, StorageService, $rootScope) {
 
+    $scope.roundedTimeUntilNotification = null;
+    $scope.timeUntilNotification = null;
+    var BadPositionStarterMark = null;
     $scope.upperIsCalibrated = false;
     $scope.lowerIsCalibrated = false;
     $scope.isSitting = true;
     var upperPositionData = [];
     if (StorageService.loadData('upperPositionData')) upperPositionData = StorageService.loadData('upperPositionData');
-
-
     $scope.upperDevice = null;
     $scope.lowerDevice = null;
     $scope.upperMessage = [];
@@ -245,6 +246,8 @@ angular.module('starter.controllers', [])
     $scope.calibrate = function () {
       $scope.upperIsCalibrated = false;
       $scope.lowerIsCalibrated = false;
+      BadPositionStarterMark = null;
+      $scope.timeUntilNotification = null;
 
       if ($scope.upperDevice) BLE.sendData($scope.upperDevice.id, upperDeviceOptions, BLE.stringToBytes("Calibrate"));
       if ($scope.lowerDevice) BLE.sendData($scope.lowerDevice.id, lowerDeviceOptions, BLE.stringToBytes("Calibrate"));
@@ -265,10 +268,10 @@ angular.module('starter.controllers', [])
       // Checking for the calibration
       if (upperMessage.includes("Calibrated")) {
         $scope.upperIsCalibrated = true;
-        if ($scope.lowerIsCalibrated) {
-          $scope.closeCalibrationPopover();
-          alert("Calibrated!");
-        }
+        // if ($scope.lowerIsCalibrated) {
+        $scope.closeCalibrationPopover();
+        alert("Calibrated!");
+        // }
       }
 
       // Parse the message
@@ -280,10 +283,27 @@ angular.module('starter.controllers', [])
 
         // This is for the DEMO ONLY
         upperPositionData.push($scope.upperMessage);
-
         StorageService.saveData('upperPositionData', upperPositionData);
-      }
 
+        if ($scope.upperMessage[1] != 0 || $scope.upperMessage[2] != 0 || $scope.upperMessage[3] != 0) {
+          var abatereaTotala = 0;
+          var currentTime = new Date();
+          var passedPercentage = 0;
+
+          // If starter mark has been already set then don't set it again. It will become null when the notification arrives.
+          if (BadPositionStarterMark == null) BadPositionStarterMark = new Date();
+          for (var i = 1; i <= 3; i++)
+            abatereaTotala = abatereaTotala + Math.abs($scope.upperMessage[i]);
+          if ($scope.timeUntilNotification != null)
+            passedPercentage = (Math.abs(currentTime - BadPositionStarterMark) / 60000) / $scope.timeUntilNotification;
+          $scope.timeUntilNotification = (1 - passedPercentage) * 30 / abatereaTotala;
+          $scope.roundedTimeUntilNotification = Math.round($scope.timeUntilNotification);
+        } else {
+          $scope.timeUntilNotification = null;
+          $scope.roundedTimeUntilNotification = null;
+          BadPositionStarterMark = null;
+        }
+      }
       console.log($scope.upperMessage);
     }
 

@@ -1,7 +1,7 @@
 <ion-view view-title="Status">
   <ion-content>
     <h1 style="padding-top: 10px" align="center">Status</h1>
-    <p class="notificationTime"> Time until notified: <span style="color:red"> 3 min </span></p>
+    <p ng-if="timeUntilNotification" class="notificationTime"> Time until notified: <span style="color:red"> {{roundedTimeUntilNotification}} min </span></p>
     <div class="card">
 
       <div class="item item-divider">
