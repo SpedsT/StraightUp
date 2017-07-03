@@ -9,13 +9,15 @@ angular.module('starter.controllers', [])
       ### Status Controller ###
       #########################
   */
-  .controller('StatusCtrl', function ($scope, $ionicLoading, $ionicPopover, $ionicPopup, Devices, BLE, $interval, StorageService) {
+  .controller('StatusCtrl', function ($scope, $ionicLoading, $ionicPopover, $ionicPopup, Devices, BLE, $interval, StorageService, $rootScope) {
 
     $scope.upperIsCalibrated = false;
     $scope.lowerIsCalibrated = false;
     $scope.isSitting = true;
-    var dateOfLastMessageRecieved = null
-    if (StorageService.loadData('dateOfLastMessageRecieved')) dateOfLastMessageRecieved = StorageService.loadData('dateOfLastMessageRecieved');
+    var upperPositionData = [];
+    if (StorageService.loadData('upperPositionData')) upperPositionData = StorageService.loadData('upperPositionData');
+
+
     $scope.upperDevice = null;
     $scope.lowerDevice = null;
     $scope.upperMessage = [];
@@ -270,15 +272,24 @@ angular.module('starter.controllers', [])
       }
 
       // Parse the message
-      if (upperMessage != "" && upperMessage != null) $scope.upperMessage = upperMessage.split(", ");
+      if (upperMessage != "" && upperMessage != null && !upperMessage.includes("Calibrate")) {
+        $scope.upperMessage = upperMessage.split(", ");
 
-      // Send the data to local storage for the statistics
-      StorageService.saveData('upperPositions', $scope.upperMessage);
+        // Send to other controllers
+        $rootScope.$broadcast("messageRecieved", $scope.upperMessage);
+
+        // This is for the DEMO ONLY
+        upperPositionData.push($scope.upperMessage);
+
+        StorageService.saveData('upperPositionData', upperPositionData);
+      }
 
       console.log($scope.upperMessage);
     }
 
     $scope.lowerMessageRecieved = function (lowerMessage) {
+
+      // ToDo: redo everything here
 
       // Checking for the calibration
       if (lowerMessage.includes("Calibrated")) {
@@ -292,8 +303,12 @@ angular.module('starter.controllers', [])
       // Parse the message
       if (lowerMessage != "" && upperMessage != null) $scope.lowerMessage = lowerMessage.split(", ");
 
-      // Send the data to local storage for the statistics
+      // Send the data to local storage for the statistics 
+      // ToDo: fix this
       StorageService.saveData('lowerPositions', $scope.lowerMessage);
+
+      // Send to other controllers
+      $rootScope.$broadcast("messageRecieved", $scope.lowerMessage);
 
       console.log($scope.lowerMessage);
     }
@@ -307,7 +322,14 @@ angular.module('starter.controllers', [])
       ### Live Monitoring Controller ###
       ##################################
   */
-  .controller('LiveMonitoringCtrl', function ($scope) {
+  .controller('LiveMonitoringCtrl', function ($scope, $rootScope) {
+    $scope.sidePosition = 0;
+    $scope.frontPosition = 0;
+    $scope.abovePosition = 0;
+
+    $scope.sidePositionImageNumber = 0;
+    $scope.frontPositionImageNumber = 0;
+    $scope.abovePositionImageNumber = 0;
 
     $scope.options = {
       loop: true,
@@ -318,6 +340,138 @@ angular.module('starter.controllers', [])
       }
     };
 
+    $scope.$on('messageRecieved', function (event, message) {
+      $scope.sidePosition = message[2];
+      switch (message[2]) {
+        case "0":
+          $scope.sidePositionImageNumber = 0;
+          break;
+        case "1":
+        case "2":
+        case "3":
+          $scope.sidePositionImageNumber = 1;
+          break;
+        case "4":
+        case "5":
+        case "6":
+          $scope.sidePositionImageNumber = 2;
+          break;
+        case "7":
+        case "8":
+        case "9":
+        case "10":
+          $scope.sidePositionImageNumber = 3;
+          break;
+        case "-1":
+        case "-2":
+        case "-3":
+          $scope.sidePositionImageNumber = -1;
+          break;
+        case "-4":
+        case "-5":
+        case "-6":
+          $scope.sidePositionImageNumber = -2;
+          break;
+        case "-7":
+        case "-8":
+        case "-9":
+        case "-10":
+          $scope.sidePositionImageNumber = -3;
+          break;
+        default:
+          $scope.sidePositionImageNumber = 0;
+          break;
+      }
+
+      $scope.frontPosition = message[3];
+      switch (message[3]) {
+        case "0":
+          $scope.frontPositionImageNumber = 0;
+          break;
+        case "1":
+        case "2":
+        case "3":
+          $scope.frontPositionImageNumber = 1;
+          break;
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+        case "10":
+          $scope.frontPositionImageNumber = 2;
+          break;
+        case "-1":
+        case "-2":
+        case "-3":
+          $scope.frontPositionImageNumber = -1;
+          break;
+        case "-4":
+        case "-5":
+        case "-6":
+        case "-7":
+        case "-8":
+        case "-9":
+        case "-10":
+          $scope.frontPositionImageNumber = -2;
+          break;
+        default:
+          $scope.frontPositionImageNumber = 0;
+          break;
+      }
+
+      $scope.abovePosition = message[1];
+      switch (message[1]) {
+        case "0":
+          $scope.abovePositionImageNumber = 0;
+          break;
+        case "1":
+        case "2":
+          $scope.abovePositionImageNumber = 1;
+          break;
+        case "3":
+        case "4":
+          $scope.abovePositionImageNumber = 2;
+          break;
+        case "5":
+        case "6":
+          $scope.abovePositionImageNumber = 3;
+          break;
+        case "7":
+        case "8":
+          $scope.abovePositionImageNumber = 4;
+          break;
+        case "9":
+        case "10":
+          $scope.abovePositionImageNumber = 5;
+          break;
+        case "-1":
+        case "-2":
+          $scope.abovePositionImageNumber = -1;
+          break;
+        case "-3":
+        case "-4":
+          $scope.abovePositionImageNumber = -2;
+          break;
+        case "-5":
+        case "-6":
+          $scope.abovePositionImageNumber = -3;
+          break;
+        case "-7":
+        case "-8":
+          $scope.abovePositionImageNumber = -4;
+          break;
+        case "-9":
+        case "-10":
+          $scope.abovePositionImageNumber = -5;
+          break;
+        default:
+          $scope.abovePositionImageNumber = 0;
+          break;
+      }
+    })
+
   })
 
 
@@ -326,11 +480,22 @@ angular.module('starter.controllers', [])
       ### Statistics Controller ###
       #############################
   */
-  .controller('StatisticsCtrl', function ($scope) {
+  .controller('StatisticsCtrl', function ($scope, StorageService) {
 
     var lastWeekChartID = document.getElementById("lastWeek").getContext('2d');
     var todayChartID = document.getElementById("today").getContext('2d');
     var deviationsChartID = document.getElementById("deviations").getContext('2d');
+
+    var forwardsMean = 0;
+    var rotatedRightMean = 0;
+    var leanedRightMean = 0;
+    var backwardsMean = 0;
+    var leanedLeftMean = 0;
+    var rotatedLeftMean = 0;
+
+    // Get the data from local storage
+    var upperPositionData = [];
+    if (StorageService.loadData('upperPositionData')) upperPositionData = StorageService.loadData('upperPositionData');
 
     var pointBackgroundColor = [
       'rgba(255, 255, 255, 1)',
@@ -421,6 +586,21 @@ angular.module('starter.controllers', [])
       type: 'radar',
       data: deviationsData,
       options: options,
+    });
+
+    $scope.$on("$ionicView.enter", function (event) {
+      if (StorageService.loadData('upperPositionData')) upperPositionData = StorageService.loadData('upperPositionData');
+      for (var i = 0; i < upperPositionData.length; i++) {
+        if (upperPositionData[i][2] > 0) forwardsMean = forwardsMean + parseInt(upperPositionData[i][2]);
+        else backwardsMean = backwardsMean - parseInt(upperPositionData[i][2]);
+
+        if (upperPositionData[i][1] > 0) rotatedRightMean = rotatedRightMean + parseInt(upperPositionData[i][1]);
+        else rotatedLeftMean = rotatedLeftMean - parseInt(upperPositionData[i][1]);
+
+        if (upperPositionData[i][3] > 0) leanedRightMean = leanedRightMean + parseInt(upperPositionData[i][3]);
+        else leanedLeftMean = leanedLeftMean - parseInt(upperPositionData[i][3]);
+      }
+      deviationsData.datasets[0].data = [forwardsMean / upperPositionData.length, rotatedRightMean / upperPositionData.length, leanedRightMean / upperPositionData.length, backwardsMean / upperPositionData.length, leanedLeftMean / upperPositionData.length, rotatedLeftMean / upperPositionData.length]
     });
 
   })

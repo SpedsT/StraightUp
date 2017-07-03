@@ -3,30 +3,37 @@
     <ion-slides options="options" slider="swiper" class="slidesHeight">
       <ion-slide-page>
         <ion-content>
-          <p class="titleStyle" style="color: red"> Side view </p>
-          <img class="centerImage" src="resources/side+3.jpg" style="height: 80%" />
+          <p ng-if="sidePosition!=0" class="titleStyle" style="color: red"> Side view </p>
+          <p ng-if="sidePosition==0" class="titleStyle"> Side view </p>
+          <img id="sideImage" class="centerImage" src="{{'resources/side' + sidePositionImageNumber + '.jpg'}}" style="height: 80%"
+          />
           <p class="adviceStyle "> Your side position is:
-            <span class="incorrectStyle "> incorrect! </span>
+            <span ng-if="sidePosition==0" class="correctStyle"> correct ! </span>
+            <span ng-if="sidePosition!=0" class="incorrectStyle"> incorrect by {{sidePosition}} ! </span>
           </p>
 
         </ion-content>
       </ion-slide-page>
       <ion-slide-page>
         <ion-content>
-          <p class="titleStyle"> Front view </p>
-          <img class="centerImage " src="resources/front0.jpg " style="height: 80%" />
-          <p class="adviceStyle "> Your frontal position is:
-            <span class="correctStyle "> correct! </span>
+          <p ng-if="frontPosition!=0" class="titleStyle" style="color: red"> Front view </p>
+          <p ng-if="frontPosition==0" class="titleStyle"> Side view </p>
+          <img id="frontImage" class="centerImage" src="{{'resources/front' + frontPositionImageNumber + '.jpg'}}" style="height: 80%"
+            <p class="adviceStyle "> Your frontal position is:
+          <span ng-if="frontPosition==0" class="correctStyle"> correct ! </span>
+          <span ng-if="frontPosition!=0" class="incorrectStyle"> incorrect by {{frontPosition}} ! </span>
           </p>
 
         </ion-content>
       </ion-slide-page>
       <ion-slide-page>
         <ion-content>
-          <p class="titleStyle"> Above view </p>
-          <img class="centerImage " src="resources/above0.jpg " />
-          <p class="adviceStyle "> Your rotation is:
-            <span class="correctStyle "> correct! </span>
+          <p ng-if="abovePosition!=0" class="titleStyle" style="color: red"> Above view </p>
+          <p ng-if="abovePosition==0" class="titleStyle"> Above view </p>
+          <img id="aboveImage" class="centerImage" src="{{'resources/above' + abovePositionImageNumber + '.jpg'}}" style="height: 80%"
+            <p class="adviceStyle"> Your rotation is:
+          <span ng-if="abovePosition==0" class="correctStyle"> correct ! </span>
+          <span ng-if="abovePosition!=0" class="incorrectStyle"> incorrect by {{abovePosition}} ! </span>
           </p>
         </ion-content>
       </ion-slide-page>
