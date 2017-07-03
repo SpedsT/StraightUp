@@ -275,7 +275,7 @@ angular.module('starter.controllers', [])
       }
 
       // Parse the message
-      if (upperMessage != "" && upperMessage != null && !upperMessage.includes("Calibrate")) {
+      if (upperMessage != "" && upperMessage != null && !upperMessage.includes("Calibrate") && $scope.isSitting) {
         $scope.upperMessage = upperMessage.split(", ");
 
         // Send to other controllers
@@ -289,23 +289,63 @@ angular.module('starter.controllers', [])
           var abatereaTotala = 0;
           var currentTime = new Date();
           var passedPercentage = 0;
+          var firstTimeScheduling = false;
 
           // If starter mark has been already set then don't set it again. It will become null when the notification arrives.
-          if (BadPositionStarterMark == null) BadPositionStarterMark = new Date();
+          if (BadPositionStarterMark == null) {
+            BadPositionStarterMark = new Date();
+            firstTimeScheduling = true;
+          }
           for (var i = 1; i <= 3; i++)
             abatereaTotala = abatereaTotala + Math.abs($scope.upperMessage[i]);
           if ($scope.timeUntilNotification != null)
             passedPercentage = (Math.abs(currentTime - BadPositionStarterMark) / 60000) / $scope.timeUntilNotification;
           $scope.timeUntilNotification = (1 - passedPercentage) * 30 / abatereaTotala;
           $scope.roundedTimeUntilNotification = Math.round($scope.timeUntilNotification);
+
+          var now = new Date().getTime()
+          whenToNotify = new Date(now + $scope.timeUntilNotification * 60000);
+
+          if (firstTimeScheduling) {
+            // Schedule the notification
+            cordova.plugins.notification.local.schedule({
+              id: 1,
+              title: 'Please adjust your postion',
+              text: 'You were sitting too much in a bad posture',
+              at: whenToNotify,
+              badge: 1
+            });
+          } else {
+            // Update the existing notification
+            cordova.plugins.notification.local.update({
+              id: 1,
+              at: whenToNotify,
+              json: {
+                updated: true
+              }
+            });
+          }
+
         } else {
           $scope.timeUntilNotification = null;
           $scope.roundedTimeUntilNotification = null;
           BadPositionStarterMark = null;
+          cordova.plugins.notification.local.cancel(1, function () {
+            // Notification was cancelled
+          });
         }
       }
       console.log($scope.upperMessage);
+
+      cordova.plugins.notification.local.on('trigger', function (notification) {
+        console.log('ontrigger', arguments);
+        $scope.timeUntilNotification = null;
+        $scope.roundedTimeUntilNotification = null;
+        BadPositionStarterMark = null;
+      });
     }
+
+
 
     $scope.lowerMessageRecieved = function (lowerMessage) {
 
